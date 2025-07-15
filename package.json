@@ -5,13 +5,20 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "dev": "concurrently \"npm run api\" \"npm run frontend\"",
+    "api": "node api-server.js",
+    "frontend": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build"
   },
   "dependencies": {
-    "openai": "latest",
     "@openai/agents": "latest",
-    "zod": "3.25.67",
+    "axios": "latest",
+    "concurrently": "^9.2.0",
+    "cors": "^2.8.5",
     "dotenv": "latest",
-    "axios": "latest"
+    "express": "^5.1.0",
+    "openai": "latest",
+    "zod": "3.25.67"
   }
 }

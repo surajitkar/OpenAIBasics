@@ -1,0 +1,17 @@
+{
+  "name": "openai-hackathon-starter",
+  "version": "1.0.0",
+  "description": "A modular Node.js project for OpenAI hackathon activities: Foundations, Chatbot, Advanced Concepts, and Agents SDK.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "openai": "latest",
+    "@openai/agents": "latest",
+    "zod": "3.25.67",
+    "dotenv": "latest",
+    "axios": "latest"
+  }
+}

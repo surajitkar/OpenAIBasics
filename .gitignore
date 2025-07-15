@@ -24,6 +24,10 @@ pids
 # Coverage directory used by tools like istanbul
 coverage/
 
+# Frontend build output
+frontend/dist/
+frontend/build/
+
 # IDE files
 .vscode/
 .idea/

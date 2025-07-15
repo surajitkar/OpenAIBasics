@@ -1,57 +1,124 @@
 # OpenAI Hackathon Starter
 
-A comprehensive Node.js project demonstrating OpenAI API capabilities across 5 learning modules, from basic setup to advanced multi-agent workflows and persistent assistants.
+A comprehensive Node.js project demonstrating OpenAI API capabilities across 5 learning modules, from basic setup to advanced multi-agent workflows and persistent assistants. Now featuring a modern React frontend interface!
 
 ## 🚀 Quick Start
 
+### Option 1: Web Interface (Recommended)
+1. **Install dependencies:**
+   ```bash
+   npm install
+   cd frontend && npm install && cd ..
+   ```
+
+2. **Set up your OpenAI API key:**
+   - Create a `.env` file:
+     ```
+     OPENAI_API_KEY=your_api_key_here
+     OPENAI_ORG_ID=your_organization_id_here  # Optional
+     WEATHER_API_KEY=your_weatherapi_key_here  # Optional
+     ```
+
+3. **Start the web application:**
+   ```bash
+   npm run dev
+   ```
+   
+   This starts both the backend API server and React frontend. Open http://localhost:5173 in your browser.
+
+### Option 2: Command Line Interface
 1. **Install dependencies:**
    ```bash
    npm install
    ```
 
-2. **Set up your OpenAI API key:**
-   - Option 1: System environment variable (recommended)
-     ```bash
-     # Windows
-     set OPENAI_API_KEY=your_api_key_here
-     set OPENAI_ORG_ID=your_organization_id_here
-     
-     # macOS/Linux
-     export OPENAI_API_KEY=your_api_key_here
-     export OPENAI_ORG_ID=your_organization_id_here
-     ```
-   - Option 2: Create a `.env` file
-     ```
-     OPENAI_API_KEY=your_api_key_here
-     OPENAI_ORG_ID=your_organization_id_here  # Optional: For organization billing
-     WEATHER_API_KEY=your_weatherapi_key_here  # Optional for weather demos
-     ```
+2. **Set up your OpenAI API key (see above)**
 
 3. **Run the complete demo:**
    ```bash
    node demo-all.js
    ```
 
+## 🌐 React Frontend Features
+
+The new React frontend provides:
+
+- **Interactive Chat Interface**: Real-time messaging with all AI agents
+- **Agent Selection**: Easy switching between different AI capabilities
+- **Modern UI**: Responsive design with Tailwind CSS
+- **Real-time Status**: API connection monitoring
+- **Settings Panel**: Configuration help and project information
+- **Error Handling**: Graceful error handling with user feedback
+- **Token Usage Tracking**: Monitor API usage and costs
+
+### Frontend Technology Stack
+- **React 18** with modern hooks
+- **Vite** for fast development
+- **Tailwind CSS** for styling
+- **Lucide React** for icons
+- **Express.js** API server bridge
+
 ## 📚 Project Structure
 
 ```
 openai-hackathon-starter/
-├── foundations/          # Module 1: Core Implementation
-│   └── openai-setup.js  # Basic API setup and first call
-├── chatbot/             # Module 2: Chatbot Development  
-│   └── chatbot.js       # Interactive persistent chatbot
-├── advanced/            # Module 3: Advanced Concepts
-│   └── weather-function.js  # Function calling with external APIs
-├── agents/              # Module 4: OpenAI Agents SDK
-│   ├── agent-demo.js    # Single agent with tools
-│   └── multi-agent-demo.js  # Multi-agent workflows & handoffs
-├── assistants/          # Module 5: OpenAI Assistants API
-│   ├── persistent-assistant-demo.js  # Stateful conversations
-│   └── file-analysis-demo.js  # File processing & code interpreter
-├── demo-all.js          # Complete demonstration runner
-├── package.json         # Dependencies and project config
-├── README.md           # This file
-└── TECHNOLOGY-GUIDE.md  # Comprehensive guide for beginners
+├── frontend/              # React Web Application
+│   ├── src/
+│   │   ├── components/    # React components
+│   │   │   ├── Chat/      # Chat interface
+│   │   │   ├── AgentSelector/ # Agent selection
+│   │   │   └── Settings/  # Settings panel
+│   │   └── App.jsx        # Main app component
+│   ├── package.json       # Frontend dependencies
+│   └── README.md          # Frontend documentation
+├── api-server.js          # Express API server (bridges frontend/backend)
+├── foundations/           # Module 1: Core Implementation
+│   ├── openai-setup.js    # Basic API setup and first call
+│   └── token-cost-demo.js # Real token usage and cost tracking
+├── chatbot/               # Module 2: Chatbot Development  
+│   └── chatbot.js         # Interactive persistent chatbot
+├── advanced/              # Module 3: Advanced Concepts
+│   └── weather-function.js # Function calling with external APIs
+├── agents/                # Module 4: OpenAI Agents SDK
+│   ├── agent-demo.js      # Single agent with tools
+│   └── multi-agent-demo.js # Multi-agent workflows & handoffs
+├── assistants/            # Module 5: OpenAI Assistants API
+│   ├── persistent-assistant-demo.js # Stateful conversations
+│   └── file-analysis-demo.js # File processing & code interpreter
+├── demo-all.js            # Complete demonstration runner
+└── package.json           # Main project configuration
+```
+
+## 🛠️ Available Scripts
+
+### Web Application
+```bash
+# Start both backend API and React frontend
+npm run dev
+
+# Start only the backend API server
+npm run api
+
+# Start only the frontend (requires API server running)
+npm run frontend
+
+# Build frontend for production
+npm run build
+```
+
+### Command Line Interface
+```bash
+# Run complete demo sequence
+node demo-all.js
+
+# Run individual modules
+node foundations/openai-setup.js
+node chatbot/chatbot.js
+node advanced/weather-function.js
+node agents/agent-demo.js
+node agents/multi-agent-demo.js
+node assistants/persistent-assistant-demo.js
+node assistants/file-analysis-demo.js
 ```
 
 ## 🎯 Learning Modules
@@ -178,11 +245,22 @@ node assistants/file-analysis-demo.js
 
 ## 🛠️ Dependencies
 
+### Backend
 - **@openai/agents**: OpenAI Agents SDK for advanced agent workflows
 - **openai**: Official OpenAI API client
+- **express**: Web server framework for API endpoints
+- **cors**: Cross-origin resource sharing middleware
 - **zod**: Schema validation (required for Agents SDK)
 - **axios**: HTTP client for external API calls
 - **dotenv**: Environment variable management
+- **concurrently**: Run multiple commands simultaneously
+
+### Frontend
+- **react**: React library for building user interfaces
+- **vite**: Fast build tool and dev server
+- **tailwindcss**: Utility-first CSS framework
+- **lucide-react**: Beautiful icon library
+- **axios**: HTTP client for API communication
 
 ## 🌡️ Weather API Setup (Optional)
 

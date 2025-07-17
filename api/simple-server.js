@@ -2,6 +2,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 import { OpenAI } from 'openai';
 import { Agent, tool } from '@openai/agents';
 import { z } from 'zod';
@@ -30,15 +31,63 @@ const upload = multer({
 app.use(cors());
 app.use(express.json());
 
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: {
+    error: 'Too many requests from this IP, please try again later',
+    retryAfter: '15 minutes'
+  }
+});
+app.use('/api/', limiter);
+
+// Request logging and metrics
+let requestCount = 0;
+let requestsByEndpoint = {};
+const serverStartTime = new Date();
+
+app.use((req, res, next) => {
+  requestCount++;
+  const endpoint = req.path;
+  requestsByEndpoint[endpoint] = (requestsByEndpoint[endpoint] || 0) + 1;
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path} - IP: ${req.ip}`);
+  next();
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    memory: {
+      used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024), // MB
+      total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024) // MB
+    },
     services: {
       api: 'operational',
-      openai: process.env.OPENAI_API_KEY ? 'configured' : 'not_configured'
+      openai: process.env.OPENAI_API_KEY ? 'configured' : 'not_configured',
+      weather: process.env.WEATHER_API_KEY ? 'configured' : 'not_configured'
     }
+  });
+});
+
+// Metrics endpoint
+app.get('/api/metrics', (req, res) => {
+  res.json({
+    server_start_time: serverStartTime.toISOString(),
+    uptime_seconds: process.uptime(),
+    total_requests: requestCount,
+    requests_by_endpoint: requestsByEndpoint,
+    memory_usage: {
+      heap_used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024), // MB
+      heap_total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024), // MB
+      external: Math.round(process.memoryUsage().external / 1024 / 1024), // MB
+      rss: Math.round(process.memoryUsage().rss / 1024 / 1024) // MB
+    },
+    cpu_usage: process.cpuUsage(),
+    timestamp: new Date().toISOString()
   });
 });
 
@@ -242,15 +291,15 @@ app.post('/api/agents/math', async (req, res) => {
 // Assistant with file analysis
 app.post('/api/assistants/analyze-file', upload.single('file'), async (req, res) => {
   try {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      return res.status(401).json({ error: 'OpenAI API key not configured' });
+    }
+
     const { question = 'Please analyze this file and provide insights.' } = req.body;
 
     if (!req.file) {
       return res.status(400).json({ error: 'File is required' });
-    }
-
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      return res.status(401).json({ error: 'OpenAI API key not configured' });
     }
 
     const openai = new OpenAI({ apiKey });
@@ -465,6 +514,7 @@ app.get('/', (req, res) => {
     version: '1.0.0',
     endpoints: {
       health: 'GET /api/health',
+      metrics: 'GET /api/metrics',
       chat: 'POST /api/chat',
       chat_stream: 'POST /api/chat (with stream: true)',
       weather: 'GET /api/weather?city=Tokyo',
@@ -499,11 +549,13 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`🚀 OpenAI Hackathon Starter API Server running on port ${PORT}`);
   console.log(`🔧 Health Check: http://localhost:${PORT}/api/health`);
+  console.log(`📊 Metrics: http://localhost:${PORT}/api/metrics`);
   console.log(`💬 Chat API: POST http://localhost:${PORT}/api/chat`);
   console.log(`🌦️ Weather API: GET http://localhost:${PORT}/api/weather?city=Tokyo`);
   console.log(`🤖 Agents API: GET http://localhost:${PORT}/api/agents`);
   console.log(`📁 File Analysis: POST http://localhost:${PORT}/api/assistants/analyze-file`);
   console.log(`🔑 Auth Validate: POST http://localhost:${PORT}/api/auth/validate`);
+  console.log(`⚡ Rate Limit: 100 requests per 15 minutes per IP`);
 });
 
 export default app;

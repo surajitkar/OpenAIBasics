@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node index.js",
     "api": "node api/simple-server.js",
-    "dev": "node api/simple-server.js"
+    "dev": "node api/simple-server.js",
+    "test-api": "node api/test-suite.js"
   },
   "dependencies": {
     "openai": "latest",
@@ -21,6 +22,7 @@
     "express-rate-limit": "latest",
     "swagger-jsdoc": "latest",
     "swagger-ui-express": "latest",
-    "multer": "latest"
+    "multer": "latest",
+    "form-data": "latest"
   }
 }

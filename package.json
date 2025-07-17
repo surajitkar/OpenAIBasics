@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "api": "node api/server.js",
-    "dev": "node api/server.js"
+    "api": "node api/simple-server.js",
+    "dev": "node api/simple-server.js"
   },
   "dependencies": {
     "openai": "latest",

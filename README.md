@@ -32,6 +32,12 @@ A comprehensive Node.js project demonstrating OpenAI API capabilities across 5 l
    node demo-all.js
    ```
 
+4. **Start the API server:**
+   ```bash
+   npm run api
+   ```
+   The API server will be available at `http://localhost:3001`
+
 ## 📚 Project Structure
 
 ```
@@ -52,6 +58,44 @@ openai-hackathon-starter/
 ├── package.json         # Dependencies and project config
 ├── README.md           # This file
 └── TECHNOLOGY-GUIDE.md  # Comprehensive guide for beginners
+```
+
+## 🌐 API Server
+
+The project includes a comprehensive REST API server that provides web access to all OpenAI capabilities:
+
+### Quick Start
+```bash
+npm run api
+```
+
+### Available Endpoints
+- **Health Check**: `GET /api/health` - System status
+- **Chat**: `POST /api/chat` - OpenAI chat completions with streaming support
+- **Weather**: `GET /api/weather?city=Tokyo` - Current weather and forecasts
+- **Agents**: `GET /api/agents` - List available AI agents
+- **Weather Agent**: `POST /api/agents/weather` - Weather information via agent
+- **Math Agent**: `POST /api/agents/math` - Mathematical calculations
+- **File Analysis**: `POST /api/assistants/analyze-file` - Upload and analyze files
+- **Auth Validation**: `POST /api/auth/validate` - Validate API keys
+
+### Documentation
+See [API.md](./API.md) for complete API documentation with examples.
+
+### Example Usage
+```bash
+# Get weather information
+curl "http://localhost:3001/api/weather?city=Tokyo&forecast=true"
+
+# Chat with AI
+curl -X POST http://localhost:3001/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Hello!"}'
+
+# Use math agent
+curl -X POST http://localhost:3001/api/agents/math \
+  -H "Content-Type: application/json" \
+  -d '{"message": "What is 15 * 23?"}'
 ```
 
 ## 🎯 Learning Modules

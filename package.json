@@ -5,13 +5,22 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "api": "node api/server.js",
+    "dev": "node api/server.js"
   },
   "dependencies": {
     "openai": "latest",
     "@openai/agents": "latest",
     "zod": "3.25.67",
     "dotenv": "latest",
-    "axios": "latest"
+    "axios": "latest",
+    "express": "latest",
+    "cors": "latest",
+    "helmet": "latest",
+    "express-rate-limit": "latest",
+    "swagger-jsdoc": "latest",
+    "swagger-ui-express": "latest",
+    "multer": "latest"
   }
 }

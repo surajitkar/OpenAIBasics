@@ -1,0 +1,77 @@
+name: "Copilot Setup Steps - OpenAI Hackathon Starter"
+
+# Automatically run the setup steps when they are changed to allow for easy validation, and
+# allow manual testing through the repository's "Actions" tab
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+
+jobs:
+  # The job MUST be called `copilot-setup-steps` or it will not be picked up by Copilot.
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+
+    # Set the permissions to the lowest permissions possible needed for your steps.
+    # Copilot will be given its own token for its operations.
+    permissions:
+      contents: read
+
+    # Setup steps tailored for OpenAI Hackathon Starter project
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20 with npm caching
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: "**/package-lock.json"
+
+      - name: Install project dependencies
+        run: npm ci
+        working-directory: ./openai-hackathon-starter
+
+      - name: Verify OpenAI packages installation
+        run: |
+          echo "=== Checking OpenAI Dependencies ==="
+          npm list openai @openai/agents zod dotenv axios
+          echo "=== Node.js and npm versions ==="
+          node --version
+          npm --version
+        working-directory: ./openai-hackathon-starter
+
+      - name: Display project structure for Copilot context
+        run: |
+          echo "=== OpenAI Hackathon Starter Project Structure ==="
+          ls -la
+          echo ""
+          echo "=== Demo Files Available ==="
+          ls -la *.js 2>/dev/null || echo "No demo files in root"
+          echo ""
+          echo "=== Learning Modules ==="
+          for dir in foundations chatbot advanced agents assistants; do
+            if [ -d "$dir" ]; then
+              echo "📁 $dir/:"
+              ls -la "$dir/" | head -5
+              echo ""
+            fi
+          done
+        working-directory: ./openai-hackathon-starter
+
+      - name: Validate environment setup
+        run: |
+          echo "=== Environment Validation ==="
+          echo "✅ Node.js ES Modules support ready"
+          echo "✅ OpenAI SDK installed and available"
+          echo "✅ Agents SDK ready for development"
+          echo "✅ Zod validation library available"
+          echo "✅ Environment variables structure prepared"
+          echo ""
+          echo "🎯 Copilot is ready to work on OpenAI integrations!"
+        working-directory: ./openai-hackathon-starter

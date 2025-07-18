@@ -35,7 +35,7 @@ jobs:
 
       - name: Install project dependencies
         run: npm ci
-        working-directory: ./openai-hackathon-starter
+        #working-directory: ./openai-hackathon-starter
 
       - name: Verify OpenAI packages installation
         run: |

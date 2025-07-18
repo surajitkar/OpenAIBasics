@@ -62,7 +62,7 @@ jobs:
               echo ""
             fi
           done
-        working-directory: ./openai-hackathon-starter
+        # working-directory: ./openai-hackathon-starter
 
       - name: Validate environment setup
         run: |
@@ -74,4 +74,4 @@ jobs:
           echo "✅ Environment variables structure prepared"
           echo ""
           echo "🎯 Copilot is ready to work on OpenAI integrations!"
-        working-directory: ./openai-hackathon-starter
+        # working-directory: ./openai-hackathon-starter

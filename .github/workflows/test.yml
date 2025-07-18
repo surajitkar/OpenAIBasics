@@ -1,0 +1,199 @@
+name: Test Suite
+
+# Run tests on push to main and on pull requests
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  # Unit tests - always run (no API key required)
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run unit tests
+      run: npm run test:unit
+      
+    - name: Display test environment info
+      run: |
+        echo "Node.js version: $(node --version)"
+        echo "npm version: $(npm --version)"
+        echo "Test mode: Unit tests only"
+        
+  # Integration tests - only run if API key is available
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    # Only run if we have the API key secret
+    if: ${{ vars.OPENAI_API_KEY }}
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run integration tests
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        OPENAI_ORG_ID: ${{ secrets.OPENAI_ORG_ID }}
+      run: npm run test:integration
+      
+    - name: Display test environment info
+      run: |
+        echo "Node.js version: $(node --version)"
+        echo "npm version: $(npm --version)"
+        echo "Test mode: Integration tests"
+        echo "API Key available: ✅"
+        
+  # Full test suite - comprehensive testing
+  full-tests:
+    name: Full Test Suite
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [20.x] # Use stable version for full suite
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run all tests (with API key if available)
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        OPENAI_ORG_ID: ${{ secrets.OPENAI_ORG_ID }}
+      run: npm test
+      
+    - name: Run tests with verbose output on failure
+      if: failure()
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        OPENAI_ORG_ID: ${{ secrets.OPENAI_ORG_ID }}
+      run: npm run test:verbose
+      
+  # Code quality checks
+  quality-checks:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Check project structure
+      run: |
+        echo "Checking project structure..."
+        ls -la
+        echo ""
+        echo "Foundation files:"
+        ls -la foundations/
+        echo ""
+        echo "Test files:"
+        find tests/ -name "*.js" -type f
+        
+    - name: Validate package.json
+      run: |
+        echo "Validating package.json..."
+        node -e "const pkg = require('./package.json'); console.log('✅ Package.json is valid JSON'); console.log('Name:', pkg.name); console.log('Version:', pkg.version);"
+        
+    - name: Check test scripts
+      run: |
+        echo "Available test scripts:"
+        npm run --silent | grep test || echo "No test scripts found"
+        
+    - name: Verify test files can be imported
+      run: |
+        echo "Checking test file imports..."
+        node -e "
+          import('./tests/utils/test-helpers.js').then(() => console.log('✅ test-helpers.js imports successfully')).catch(e => { console.error('❌ test-helpers.js import failed:', e.message); process.exit(1); });
+        "
+        
+  # Test report summary
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [unit-tests, quality-checks]
+    if: always()
+    
+    steps:
+    - name: Test Results Summary
+      run: |
+        echo "## Test Results Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Unit Tests" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ needs.unit-tests.result }}" == "success" ]; then
+          echo "✅ **Unit tests passed** across all Node.js versions" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Unit tests failed**" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Integration Tests" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ secrets.OPENAI_API_KEY }}" == "" ]; then
+          echo "⏭️ **Integration tests skipped** - no API key available" >> $GITHUB_STEP_SUMMARY
+        elif [ "${{ needs.integration-tests.result }}" == "success" ]; then
+          echo "✅ **Integration tests passed**" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Integration tests failed or skipped**" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Code Quality" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ needs.quality-checks.result }}" == "success" ]; then
+          echo "✅ **Code quality checks passed**" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Code quality checks failed**" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Environment" >> $GITHUB_STEP_SUMMARY
+        echo "- **Node.js versions tested**: 18.x, 20.x, 22.x" >> $GITHUB_STEP_SUMMARY
+        echo "- **API Key available**: ${{ secrets.OPENAI_API_KEY != '' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Organization ID available**: ${{ secrets.OPENAI_ORG_ID != '' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY

@@ -5,7 +5,12 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "node tests/run-tests.js",
+    "test:foundations": "node tests/run-tests.js",
+    "test:unit": "node tests/run-tests.js --unit-only",
+    "test:integration": "node tests/run-tests.js --integration-only",
+    "test:verbose": "node tests/run-tests.js --verbose"
   },
   "dependencies": {
     "openai": "latest",
@@ -13,5 +18,17 @@
     "zod": "3.25.67",
     "dotenv": "latest",
     "axios": "latest"
-  }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "openai",
+    "ai",
+    "hackathon",
+    "chatbot",
+    "foundations",
+    "agents",
+    "nodejs"
+  ]
 }

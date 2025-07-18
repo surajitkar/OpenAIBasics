@@ -45,7 +45,7 @@ jobs:
     name: Integration Tests
     runs-on: ubuntu-latest
     # Only run if we have the API key secret
-    if: ${{ secrets.OPENAI_API_KEY != '' }}
+    if: ${{ secrets.OPENAI_API_KEY }}
     
     strategy:
       matrix:

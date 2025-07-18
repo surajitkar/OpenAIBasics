@@ -44,7 +44,7 @@ jobs:
           echo "=== Node.js and npm versions ==="
           node --version
           npm --version
-        working-directory: ./openai-hackathon-starter
+        # working-directory: ./openai-hackathon-starter
 
       - name: Display project structure for Copilot context
         run: |

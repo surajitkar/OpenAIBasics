@@ -279,6 +279,370 @@ Error: OpenAI API key not found
 - Build complex multi-agent workflows
 - Explore advanced agent patterns like hierarchical coordination
 
+## 🔧 API Server Extension Guide
+
+This project includes a simple Node.js API server (`api.js`) with public and protected endpoints. Here's how to extend it for your needs:
+
+### 🚀 Quick Start with the API
+
+```bash
+# Start the API server
+node api.js
+
+# Test public endpoint
+curl http://localhost:3000/hello
+
+# Test protected endpoint with authentication
+curl -H "Authorization: Bearer valid-token" http://localhost:3000/secure-hello
+```
+
+### 📋 Adding New Endpoints
+
+#### 1. Public Endpoints
+```javascript
+// Add a new public endpoint
+app.get('/api/status', (req, res) => {
+    res.json({ 
+        status: 'healthy', 
+        timestamp: new Date().toISOString(),
+        version: '1.0.0'
+    });
+});
+
+// POST endpoint with data validation
+app.post('/api/feedback', (req, res) => {
+    const { message, rating } = req.body;
+    
+    // Validate input
+    if (!message || !rating) {
+        return res.status(400).json({ 
+            error: 'Missing required fields: message, rating' 
+        });
+    }
+    
+    // Process feedback (save to database, etc.)
+    res.json({ 
+        success: true, 
+        message: 'Feedback received' 
+    });
+});
+```
+
+#### 2. Protected Endpoints
+```javascript
+// Add a protected endpoint using existing middleware
+app.get('/api/user/profile', validateToken, (req, res) => {
+    // Access user data (req.user would be available if you decode the token)
+    res.json({ 
+        profile: { id: 1, name: 'John Doe' },
+        permissions: ['read', 'write']
+    });
+});
+
+// Protected POST endpoint
+app.post('/api/user/settings', validateToken, (req, res) => {
+    const { theme, notifications } = req.body;
+    
+    // Update user settings
+    res.json({ 
+        success: true, 
+        settings: { theme, notifications }
+    });
+});
+```
+
+### 🔐 Enhanced Authentication
+
+#### 1. JWT Token Authentication
+```javascript
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+// Enhanced token validation with JWT
+const validateJWTToken = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'No valid token provided' });
+    }
+    
+    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.user = decoded; // Add user info to request
+        next();
+    } catch (error) {
+        return res.status(403).json({ error: 'Invalid or expired token' });
+    }
+};
+
+// Use the enhanced middleware
+app.get('/api/secure-data', validateJWTToken, (req, res) => {
+    res.json({ 
+        message: 'Secure data accessed',
+        user: req.user 
+    });
+});
+```
+
+#### 2. Role-Based Access Control
+```javascript
+// Role validation middleware
+const requireRole = (requiredRole) => {
+    return (req, res, next) => {
+        if (!req.user || req.user.role !== requiredRole) {
+            return res.status(403).json({ error: 'Insufficient permissions' });
+        }
+        next();
+    };
+};
+
+// Admin-only endpoint
+app.get('/api/admin/users', validateJWTToken, requireRole('admin'), (req, res) => {
+    res.json({ users: [] }); // Return admin data
+});
+```
+
+### 🛠️ Middleware Extensions
+
+#### 1. Request Logging
+```javascript
+// Custom logging middleware
+const logRequests = (req, res, next) => {
+    const timestamp = new Date().toISOString();
+    console.log(`${timestamp} - ${req.method} ${req.path} - IP: ${req.ip}`);
+    next();
+};
+
+// Add logging to all routes
+app.use(logRequests);
+```
+
+#### 2. Rate Limiting
+```javascript
+// Simple rate limiting (consider using express-rate-limit in production)
+const rateLimitMap = new Map();
+
+const rateLimit = (maxRequests = 100, windowMs = 60000) => {
+    return (req, res, next) => {
+        const clientIp = req.ip;
+        const now = Date.now();
+        const windowStart = now - windowMs;
+        
+        // Clean old entries
+        if (!rateLimitMap.has(clientIp)) {
+            rateLimitMap.set(clientIp, []);
+        }
+        
+        const requests = rateLimitMap.get(clientIp).filter(time => time > windowStart);
+        
+        if (requests.length >= maxRequests) {
+            return res.status(429).json({ error: 'Too many requests' });
+        }
+        
+        requests.push(now);
+        rateLimitMap.set(clientIp, requests);
+        next();
+    };
+};
+
+// Apply rate limiting
+app.use('/api', rateLimit(50, 60000)); // 50 requests per minute
+```
+
+### 🗃️ Database Integration
+
+#### 1. Simple File-Based Storage
+```javascript
+import fs from 'fs/promises';
+import path from 'path';
+
+const DATA_DIR = './data';
+
+// Ensure data directory exists
+await fs.mkdir(DATA_DIR, { recursive: true });
+
+// Save data endpoint
+app.post('/api/data', validateToken, async (req, res) => {
+    try {
+        const { key, value } = req.body;
+        const filePath = path.join(DATA_DIR, `${key}.json`);
+        
+        await fs.writeFile(filePath, JSON.stringify(value, null, 2));
+        res.json({ success: true, message: 'Data saved' });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to save data' });
+    }
+});
+
+// Read data endpoint
+app.get('/api/data/:key', validateToken, async (req, res) => {
+    try {
+        const { key } = req.params;
+        const filePath = path.join(DATA_DIR, `${key}.json`);
+        
+        const data = await fs.readFile(filePath, 'utf8');
+        res.json({ key, value: JSON.parse(data) });
+    } catch (error) {
+        res.status(404).json({ error: 'Data not found' });
+    }
+});
+```
+
+#### 2. Database Connection Example
+```javascript
+// Example with a hypothetical database
+/*
+import Database from 'your-database-library';
+
+const db = new Database(process.env.DATABASE_URL);
+
+app.get('/api/users', validateToken, async (req, res) => {
+    try {
+        const users = await db.query('SELECT * FROM users');
+        res.json({ users });
+    } catch (error) {
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+*/
+```
+
+### 📊 Error Handling & Validation
+
+#### 1. Global Error Handler
+```javascript
+// Add after all routes
+app.use((error, req, res, next) => {
+    console.error('API Error:', error);
+    
+    // Development vs Production error responses
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    
+    res.status(error.status || 500).json({
+        error: error.message || 'Internal server error',
+        ...(isDevelopment && { stack: error.stack })
+    });
+});
+
+// 404 handler
+app.use('*', (req, res) => {
+    res.status(404).json({ error: 'Endpoint not found' });
+});
+```
+
+#### 2. Input Validation
+```javascript
+// Validation middleware example
+const validateInput = (schema) => {
+    return (req, res, next) => {
+        const { error } = schema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ 
+                error: 'Validation failed',
+                details: error.details.map(d => d.message)
+            });
+        }
+        next();
+    };
+};
+
+// Usage with a validation library like Joi
+/*
+import Joi from 'joi';
+
+const userSchema = Joi.object({
+    name: Joi.string().min(3).required(),
+    email: Joi.string().email().required()
+});
+
+app.post('/api/users', validateInput(userSchema), (req, res) => {
+    // Handle validated input
+});
+*/
+```
+
+### 🔧 Configuration & Environment
+
+#### 1. Environment-Based Configuration
+```javascript
+const config = {
+    port: process.env.PORT || 3000,
+    jwtSecret: process.env.JWT_SECRET || 'development-secret',
+    databaseUrl: process.env.DATABASE_URL || 'sqlite://./dev.db',
+    apiPrefix: process.env.API_PREFIX || '/api',
+    corsOrigin: process.env.CORS_ORIGIN || '*',
+    rateLimit: {
+        max: parseInt(process.env.RATE_LIMIT_MAX) || 100,
+        windowMs: parseInt(process.env.RATE_LIMIT_WINDOW) || 60000
+    }
+};
+
+// Use configuration
+app.listen(config.port, () => {
+    console.log(`API server running on port ${config.port}`);
+});
+```
+
+#### 2. CORS Configuration
+```javascript
+// Simple CORS middleware
+const cors = (req, res, next) => {
+    res.header('Access-Control-Allow-Origin', config.corsOrigin);
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    
+    if (req.method === 'OPTIONS') {
+        res.sendStatus(200);
+    } else {
+        next();
+    }
+};
+
+app.use(cors);
+```
+
+### 🧪 Testing Your Extensions
+
+Add tests for new endpoints:
+
+```javascript
+// In tests/foundations/api.test.js
+
+runner.test('New endpoint - status check', () => {
+    // Test your new /api/status endpoint structure
+    const expectedResponse = { 
+        status: 'healthy', 
+        timestamp: expect.any(String),
+        version: '1.0.0'
+    };
+    // Add validation logic
+});
+```
+
+### 📦 Production Deployment Tips
+
+1. **Security Headers**: Add helmet.js for security headers
+2. **HTTPS**: Always use HTTPS in production
+3. **Logging**: Use winston or similar for structured logging
+4. **Monitoring**: Add health check endpoints
+5. **Documentation**: Consider adding Swagger/OpenAPI documentation
+6. **Testing**: Add integration tests for all endpoints
+
+### 🔗 Useful Libraries for Extension
+
+- **express-rate-limit**: Professional rate limiting
+- **helmet**: Security headers
+- **cors**: CORS handling
+- **joi** or **zod**: Input validation
+- **jsonwebtoken**: JWT authentication
+- **winston**: Logging
+- **swagger-ui-express**: API documentation
+
+This foundation provides a solid starting point for building sophisticated APIs while maintaining simplicity and extensibility.
+
 ## 📄 License
 
 MIT License - Feel free to use this project as a foundation for your OpenAI applications!

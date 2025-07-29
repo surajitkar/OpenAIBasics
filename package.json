@@ -11,11 +11,11 @@
     "test:unit": "node tests/run-tests.js --unit-only",
     "test:integration": "node tests/run-tests.js --integration-only",
     "test:verbose": "node tests/run-tests.js --verbose",
-    "test:coverage": "c8 --reporter=html --reporter=text --reporter=json-summary node tests/run-tests.js",
-    "test:coverage-unit": "c8 --reporter=html --reporter=text node tests/run-tests.js --unit-only",
-    "test:coverage-integration": "c8 --reporter=html --reporter=text node tests/run-tests.js --integration-only",
-    "coverage:report": "c8 report --reporter=html --reporter=text",
-    "coverage:check": "c8 check-coverage --lines 80 --functions 80 --branches 80"
+    "test:coverage": "c8 node tests/run-tests.js",
+    "test:coverage:unit": "c8 node tests/run-tests.js --unit-only",
+    "test:coverage:integration": "c8 node tests/run-tests.js --integration-only",
+    "coverage:report": "c8 report --reporter=html --reporter=text --reporter=json-summary",
+    "coverage:check": "c8 check-coverage --lines 80 --functions 80 --branches 80 --statements 80"
   },
   "dependencies": {
     "openai": "latest",

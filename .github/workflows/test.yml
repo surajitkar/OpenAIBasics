@@ -34,6 +34,17 @@ jobs:
     - name: Run unit tests
       run: npm run test:unit
       
+    - name: Run unit tests with coverage
+      run: npm run test:coverage:unit
+      
+    - name: Upload coverage reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: coverage-unit-${{ matrix.node-version }}
+        path: coverage/
+        retention-days: 30
+      
     - name: Display test environment info
       run: |
         echo "Node.js version: $(node --version)"
@@ -70,6 +81,20 @@ jobs:
         OPENAI_ORG_ID: ${{ secrets.OPENAI_ORG_ID }}
       run: npm run test:integration
       
+    - name: Run integration tests with coverage
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        OPENAI_ORG_ID: ${{ secrets.OPENAI_ORG_ID }}
+      run: npm run test:coverage:integration
+      
+    - name: Upload coverage reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: coverage-integration-${{ matrix.node-version }}
+        path: coverage/
+        retention-days: 30
+      
     - name: Display test environment info
       run: |
         echo "Node.js version: $(node --version)"
@@ -104,6 +129,20 @@ jobs:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         OPENAI_ORG_ID: ${{ secrets.OPENAI_ORG_ID }}
       run: npm test
+      
+    - name: Run all tests with coverage
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        OPENAI_ORG_ID: ${{ secrets.OPENAI_ORG_ID }}
+      run: npm run test:coverage
+      
+    - name: Upload coverage reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: coverage-full-${{ matrix.node-version }}
+        path: coverage/
+        retention-days: 30
       
     - name: Run tests with verbose output on failure
       if: failure()

@@ -9,13 +9,8 @@ tests/
 ├── foundations/
 │   ├── openai-setup.test.js      # Tests for foundations/openai-setup.js
 │   └── token-cost-demo.test.js   # Tests for foundations/token-cost-demo.js
-├── chatbot/
-│   └── chatbot.test.js           # Tests for chatbot/chatbot.js
-├── advanced/
-│   └── weather-function.test.js  # Tests for advanced/weather-function.js
 ├── utils/
 │   └── test-helpers.js           # Shared testing utilities
-├── index.test.js                 # Tests for main index.js
 └── run-tests.js                  # Main test runner
 ```
 
@@ -26,21 +21,14 @@ tests/
 npm test
 ```
 
-### With Coverage
-```bash
-npm run test:coverage
-```
-
 ### Unit Tests Only (no API calls)
 ```bash
 npm run test:unit
-npm run test:coverage:unit
 ```
 
 ### Integration Tests Only (requires API key)
 ```bash
 npm run test:integration
-npm run test:coverage:integration
 ```
 
 ### Verbose Output
@@ -48,32 +36,25 @@ npm run test:coverage:integration
 npm run test:verbose
 ```
 
-### Coverage Reports
+### Test Coverage
 ```bash
-npm run coverage:report      # Text summary
-npm run coverage:html        # HTML report in coverage/
+# Run all tests with coverage
+npm run test:coverage
+
+# Run unit tests with coverage
+npm run test:unit:coverage
+
+# Run integration tests with coverage
+npm run test:integration:coverage
+
+# Run tests with coverage for CI (JSON/text output only)
+npm run test:coverage:ci
 ```
 
-## Test Coverage
-
-The project uses **c8** for code coverage analysis. Coverage reports include:
-
-- **Line coverage**: Percentage of lines executed
-- **Function coverage**: Percentage of functions called
-- **Branch coverage**: Percentage of branches taken
-- **Statement coverage**: Percentage of statements executed
-
-### Coverage Configuration
-
-Coverage is configured in `package.json`:
-- **Include**: All source files in foundations/, chatbot/, advanced/, agents/, assistants/, index.js
-- **Exclude**: Tests, node_modules, coverage reports
-- **Reporters**: Text, LCOV, HTML
-- **Output**: `coverage/` directory
-
-### Coverage Thresholds
-
-Currently no minimum thresholds are enforced (`check-coverage: false`), but coverage reports are generated for analysis.
+Coverage reports are generated in the `coverage/` directory:
+- `coverage/index.html` - Interactive HTML report
+- `coverage/coverage-final.json` - JSON report for CI/tooling
+- Console output shows coverage summary
 
 ## Test Types
 
@@ -89,7 +70,7 @@ Currently no minimum thresholds are enforced (`check-coverage: false`), but cove
 - ✅ Graceful error handling for rate limits and network issues
 - ✅ Optional (skipped if no API key available)
 
-## Test Coverage Areas
+## Test Coverage
 
 ### OpenAI Setup Tests (`openai-setup.test.js`)
 - Environment variable validation (API key, organization ID)
@@ -106,26 +87,6 @@ Currently no minimum thresholds are enforced (`check-coverage: false`), but cove
 - Statistics aggregation
 - CSV export functionality
 - Edge cases and error handling
-
-### Chatbot Tests (`chatbot.test.js`)
-- Conversation state management
-- Message handling and formatting
-- OpenAI client integration
-- Error handling for API failures
-- Conversation persistence
-
-### Weather Function Tests (`weather-function.test.js`)
-- Function calling schema validation
-- Weather API integration (with mocking)
-- OpenAI function calling functionality
-- Error handling for API failures
-- Mock data fallback behavior
-
-### Index Tests (`index.test.js`)
-- Main entry point functionality
-- Environment setup validation
-- Project structure verification
-- Package configuration validation
 
 ## Environment Setup
 
@@ -152,15 +113,7 @@ Tests run automatically via GitHub Actions on:
 - **Node.js versions**: 18.x, 20.x, 22.x
 - **Unit tests**: Always run
 - **Integration tests**: Only run if API key available
-- **Coverage reports**: Generated and uploaded as artifacts
-
-### Coverage Artifacts
-
-GitHub Actions uploads coverage reports as artifacts:
-- **Name**: `unit-coverage-reports-node-{version}`
-- **Path**: `coverage/`
-- **Retention**: 30 days
-- **Formats**: LCOV, HTML, text summary
+- **Quality checks**: Code structure and imports
 
 ## Adding New Tests
 
@@ -236,38 +189,6 @@ runner.test('Integration test description', async () => {
 });
 ```
 
-## Coverage Analysis
-
-### Viewing Coverage Reports
-
-1. **Run tests with coverage**:
-   ```bash
-   npm run test:coverage
-   ```
-
-2. **View HTML report**:
-   ```bash
-   open coverage/index.html
-   ```
-
-3. **View text summary**:
-   ```bash
-   npm run coverage:report
-   ```
-
-### Coverage Metrics
-
-- **High coverage (>80%)**: Good test coverage
-- **Medium coverage (50-80%)**: Adequate coverage, room for improvement
-- **Low coverage (<50%)**: Needs more tests
-
-### Improving Coverage
-
-1. **Identify uncovered lines**: Check HTML report for red/yellow lines
-2. **Add unit tests**: Focus on business logic and edge cases
-3. **Add integration tests**: Test API interactions and error handling
-4. **Test error paths**: Ensure error handling code is covered
-
 ## Troubleshooting
 
 ### Common Issues
@@ -284,22 +205,9 @@ runner.test('Integration test description', async () => {
 - OpenAI API rate limit hit
 - Tests handle this gracefully
 
-#### "Coverage directory not found"
-- Run tests with coverage first: `npm run test:coverage`
-- Check that c8 is installed: `npm install`
-
 ### Debug Mode
 ```bash
 npm run test:verbose
-```
-
-### Coverage Debug
-```bash
-# Check c8 configuration
-npx c8 --help
-
-# Run with coverage debug
-DEBUG=c8 npm run test:coverage
 ```
 
 ## Performance Guidelines
@@ -307,7 +215,6 @@ DEBUG=c8 npm run test:coverage
 - **Unit tests**: Should complete in < 100ms each
 - **Integration tests**: Should complete in < 5 seconds each
 - **Full test suite**: Should complete in < 30 seconds
-- **Coverage analysis**: Adds ~10% overhead to test execution
 
 ## Test Philosophy
 
@@ -316,4 +223,3 @@ DEBUG=c8 npm run test:coverage
 3. **Clear Feedback**: Descriptive test names and error messages
 4. **Environment Aware**: Adapt to available credentials and connectivity
 5. **Comprehensive Coverage**: Test both happy paths and edge cases
-6. **Coverage Driven**: Use coverage metrics to guide test development

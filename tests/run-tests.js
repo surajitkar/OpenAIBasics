@@ -27,11 +27,7 @@ const config = {
   unitOnly: process.argv.includes('--unit-only'),
   integrationOnly: process.argv.includes('--integration-only'),
   verbose: process.argv.includes('--verbose'),
-  testDirs: [
-    join(__dirname, 'foundations'),
-    join(__dirname, 'chatbot'),
-    join(__dirname, 'advanced')
-  ]
+  testDir: join(__dirname, '.') // Look in tests directory and subdirectories
 };
 
 /**
@@ -67,7 +63,8 @@ async function findTestFiles(dir) {
       
       if (stats.isFile() && entry.endsWith('.test.js')) {
         files.push(fullPath);
-      } else if (stats.isDirectory()) {
+      } else if (stats.isDirectory() && entry !== 'utils') {
+        // Skip utils directory, recurse into other directories
         const subFiles = await findTestFiles(fullPath);
         files.push(...subFiles);
       }
@@ -131,32 +128,21 @@ async function runAllTests() {
   console.log(`   Organization ID available: ${process.env.OPENAI_ORG_ID ? '✅' : '❌'}`);
   
   // Find test files
-  const allTestFiles = [];
+  const testFiles = await findTestFiles(config.testDir);
   
-  // Add root-level test files
-  const rootTestFiles = await findTestFiles(__dirname);
-  const rootTests = rootTestFiles.filter(file => file.endsWith('.test.js') && !file.includes('/foundations/') && !file.includes('/chatbot/') && !file.includes('/advanced/'));
-  allTestFiles.push(...rootTests);
-  
-  // Add directory-based test files
-  for (const testDir of config.testDirs) {
-    const testFiles = await findTestFiles(testDir);
-    allTestFiles.push(...testFiles);
-  }
-  
-  if (allTestFiles.length === 0) {
+  if (testFiles.length === 0) {
     console.log(colorize('\n⚠️  No test files found!', 'yellow'));
-    console.log(`   Expected test files in: ${config.testDirs.join(', ')}`);
+    console.log(`   Expected test files in: ${config.testDir}`);
     console.log('   Test files should end with .test.js');
     return false;
   }
   
-  console.log(colorize(`\n🔍 Found ${allTestFiles.length} test file(s)`, 'blue'));
+  console.log(colorize(`\n🔍 Found ${testFiles.length} test file(s)`, 'blue'));
   
   // Run each test file
   const overallResults = { passed: 0, failed: 0, skipped: 0 };
   
-  for (const testFile of allTestFiles) {
+  for (const testFile of testFiles) {
     const results = await runTestFile(testFile);
     if (results) {
       overallResults.passed += results.passed || 0;

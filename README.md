@@ -197,50 +197,6 @@ For enhanced weather functionality, get a free API key from [WeatherAPI.com](htt
 
 Without this key, the weather demos will use mock data.
 
-## 🧪 Testing & Coverage
-
-### Running Tests
-```bash
-# Run all tests
-npm test
-
-# Run only unit tests (no API key required)
-npm run test:unit
-
-# Run only integration tests (requires API key)
-npm run test:integration
-
-# Run tests with verbose output
-npm run test:verbose
-```
-
-### Test Coverage
-```bash
-# Run tests with coverage collection
-npm run test:coverage
-
-# Generate HTML coverage reports
-npm run test:coverage:report
-
-# Check coverage thresholds (80% minimum)
-npm run test:coverage:check
-```
-
-### Coverage Features
-- **Comprehensive Coverage**: Lines, functions, branches, and statements
-- **HTML Reports**: Visual coverage reports in `coverage/` directory
-- **CI/CD Integration**: Automatic coverage reporting in GitHub Actions
-- **Artifact Upload**: Coverage reports uploaded as GitHub Actions artifacts
-- **Threshold Enforcement**: 80% minimum coverage for all metrics
-
-### Test Structure
-- **Unit Tests**: Fast, offline tests for core logic
-- **Integration Tests**: Real API calls with graceful error handling
-- **Coverage Demo**: Example tests demonstrating coverage collection
-- **GitHub Actions**: Automated testing across Node.js 18.x, 20.x, 22.x
-
-For detailed testing information, see [tests/README.md](./tests/README.md).
-
 ## 🔧 Configuration
 
 ### Environment Variables
@@ -285,6 +241,67 @@ For detailed testing information, see [tests/README.md](./tests/README.md).
 - Cost considerations and best practices
 - Step-by-step learning path for beginners
 - Real-world project ideas for each technology
+
+## 🧪 Testing & Coverage
+
+This project includes comprehensive testing infrastructure with coverage reporting.
+
+### Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run only unit tests (no API calls required)
+npm run test:unit
+
+# Run only integration tests (requires OPENAI_API_KEY)
+npm run test:integration
+
+# Run tests with verbose output
+npm run test:verbose
+```
+
+### Test Coverage
+
+```bash
+# Run all tests with coverage
+npm run test:coverage
+
+# Run unit tests with coverage
+npm run test:unit:coverage
+
+# Run integration tests with coverage
+npm run test:integration:coverage
+
+# Run tests with coverage for CI (JSON/text output only)
+npm run test:coverage:ci
+```
+
+Coverage reports are generated in the `coverage/` directory:
+- `coverage/index.html` - Interactive HTML report (open in browser)
+- `coverage/coverage-final.json` - JSON report for CI/tooling integration
+- Console output shows coverage summary
+
+### Test Structure
+
+```
+tests/
+├── foundations/
+│   ├── openai-setup.test.js      # Tests for foundations/openai-setup.js
+│   └── token-cost-demo.test.js   # Tests for foundations/token-cost-demo.js
+├── utils/
+│   └── test-helpers.js           # Shared testing utilities
+└── run-tests.js                  # Custom test runner
+```
+
+### Test Types
+
+- **Unit Tests**: Fast, no API calls required, test core logic
+- **Integration Tests**: Real API calls, require `OPENAI_API_KEY`
+- **Coverage Tests**: Track code coverage across all source files
+
+For detailed testing information, see [tests/README.md](./tests/README.md).
 
 ## 🚨 Troubleshooting
 

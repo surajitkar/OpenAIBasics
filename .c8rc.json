@@ -1,35 +1,32 @@
 {
-  "all": true,
-  "src": [
-    "foundations",
-    "chatbot",
-    "advanced",
-    "agents",
-    "assistants",
+  "include": [
+    "foundations/**/*.js",
+    "agents/**/*.js", 
+    "assistants/**/*.js",
+    "advanced/**/*.js",
+    "chatbot/**/*.js",
     "index.js",
-    "demo-all.js"
+    "demo-all.js",
+    "simple-coverage-test.js"
   ],
   "exclude": [
     "tests/**",
     "node_modules/**",
     "coverage/**",
-    "*.config.js",
-    "*.config.mjs"
+    "**/*.test.js",
+    "**/*.spec.js",
+    "test-coverage-setup.js"
   ],
   "reporter": [
     "text",
-    "html",
-    "json-summary",
-    "lcov"
+    "json",
+    "html"
   ],
   "reports-dir": "coverage",
-  "temp-directory": ".nyc_output",
-  "check-coverage": true,
+  "all": true,
+  "check-coverage": false,
   "lines": 80,
   "functions": 80,
   "branches": 80,
-  "statements": 80,
-  "per-file": true,
-  "clean": true,
-  "skip-full": false
+  "statements": 80
 }

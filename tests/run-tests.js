@@ -27,7 +27,7 @@ const config = {
   unitOnly: process.argv.includes('--unit-only'),
   integrationOnly: process.argv.includes('--integration-only'),
   verbose: process.argv.includes('--verbose'),
-  testDir: join(__dirname, 'foundations')
+  testDir: __dirname // Changed to scan all test directories
 };
 
 /**
@@ -63,7 +63,8 @@ async function findTestFiles(dir) {
       
       if (stats.isFile() && entry.endsWith('.test.js')) {
         files.push(fullPath);
-      } else if (stats.isDirectory()) {
+      } else if (stats.isDirectory() && entry !== 'utils') {
+        // Skip utils directory, but recurse into other directories
         const subFiles = await findTestFiles(fullPath);
         files.push(...subFiles);
       }

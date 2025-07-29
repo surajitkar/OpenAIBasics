@@ -10,7 +10,12 @@
     "test:foundations": "node tests/run-tests.js",
     "test:unit": "node tests/run-tests.js --unit-only",
     "test:integration": "node tests/run-tests.js --integration-only",
-    "test:verbose": "node tests/run-tests.js --verbose"
+    "test:verbose": "node tests/run-tests.js --verbose",
+    "test:coverage": "c8 --reporter=html --reporter=text --reporter=json-summary node tests/run-tests.js",
+    "test:coverage-unit": "c8 --reporter=html --reporter=text node tests/run-tests.js --unit-only",
+    "test:coverage-integration": "c8 --reporter=html --reporter=text node tests/run-tests.js --integration-only",
+    "coverage:report": "c8 report --reporter=html --reporter=text",
+    "coverage:check": "c8 check-coverage --lines 80 --functions 80 --branches 80"
   },
   "dependencies": {
     "openai": "latest",
@@ -18,6 +23,9 @@
     "zod": "3.25.67",
     "dotenv": "latest",
     "axios": "latest"
+  },
+  "devDependencies": {
+    "c8": "^8.0.1"
   },
   "engines": {
     "node": ">=18.0.0"

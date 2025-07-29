@@ -1,0 +1,32 @@
+{
+  "include": [
+    "foundations/**/*.js",
+    "advanced/**/*.js", 
+    "agents/**/*.js",
+    "assistants/**/*.js",
+    "chatbot/**/*.js",
+    "index.js",
+    "demo-all.js"
+  ],
+  "exclude": [
+    "tests/**",
+    "node_modules/**",
+    "coverage/**",
+    "*.config.js"
+  ],
+  "reporter": [
+    "text",
+    "html",
+    "json-summary"
+  ],
+  "reports-dir": "coverage",
+  "temp-directory": ".nyc_output",
+  "check-coverage": true,
+  "lines": 70,
+  "functions": 70,
+  "branches": 60,
+  "statements": 70,
+  "per-file": true,
+  "all": true,
+  "skip-full": false
+}

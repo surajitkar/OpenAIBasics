@@ -197,6 +197,49 @@ For enhanced weather functionality, get a free API key from [WeatherAPI.com](htt
 
 Without this key, the weather demos will use mock data.
 
+## 🧪 Testing & Coverage
+
+This project includes comprehensive test coverage to ensure reliability and help you understand the codebase.
+
+### Quick Test Commands
+
+```bash
+# Run all tests
+npm test
+
+# Run tests with coverage analysis
+npm run test:coverage
+
+# Run only unit tests (no API key required)
+npm run test:coverage-unit
+
+# Check coverage thresholds
+npm run coverage:check
+```
+
+### Coverage Features
+
+- **📊 Comprehensive Coverage**: Tracks line, function, and branch coverage
+- **🎯 Quality Thresholds**: 70% lines, 70% functions, 60% branches
+- **📱 Multiple Reports**: HTML (detailed), text (summary), JSON (CI/CD)
+- **🔍 File-by-File Analysis**: See exactly which code needs more tests
+
+### Coverage Reports
+
+After running coverage, view detailed reports:
+- **HTML Report**: Open `coverage/index.html` in your browser
+- **Terminal Summary**: Displayed after test execution
+- **JSON Data**: Available in `coverage/coverage-summary.json`
+
+### Test Structure
+
+- **Unit Tests**: Fast tests without API calls
+- **Integration Tests**: Real API testing (requires `OPENAI_API_KEY`)
+- **Mock Data**: Comprehensive test helpers and mock responses
+- **Error Handling**: Tests for API failures and edge cases
+
+For detailed testing documentation, see [tests/COVERAGE.md](./tests/COVERAGE.md).
+
 ## 🔧 Configuration
 
 ### Environment Variables

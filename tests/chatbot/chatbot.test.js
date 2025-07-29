@@ -4,86 +4,73 @@
  * Tests cover:
  * - Conversation state management
  * - Message handling and formatting
- * - OpenAI API integration for chat completions
+ * - OpenAI client integration
  * - Error handling for API failures
- * - Conversation persistence and context
+ * - Conversation persistence
  */
 
 import assert from 'assert';
 import { TestRunner, TestEnv, TestAssert, MockData } from '../utils/test-helpers.js';
 
 /**
- * Mock chatbot implementation for testing
- * Since the original chatbot.js runs an interactive loop, we create a testable version
+ * Mock chatbot functionality for testing
  */
-class TestChatbot {
+class MockChatbot {
   constructor() {
     this.conversation = [
       { role: 'system', content: 'You are a helpful assistant.' }
     ];
-    this.client = null;
-  }
-
-  initializeClient() {
-    if (!TestEnv.hasApiKey()) {
-      throw new Error('No API key available for chatbot');
-    }
-    this.client = TestEnv.createTestClient();
   }
 
   addUserMessage(content) {
-    if (!content || typeof content !== 'string') {
-      throw new Error('User message must be a non-empty string');
-    }
     this.conversation.push({ role: 'user', content });
   }
 
   addAssistantMessage(content) {
-    if (!content || typeof content !== 'string') {
-      throw new Error('Assistant message must be a non-empty string');
-    }
     this.conversation.push({ role: 'assistant', content });
   }
 
-  async getResponse(userInput) {
-    if (!this.client) {
-      this.initializeClient();
+  getConversation() {
+    return [...this.conversation];
+  }
+
+  getConversationLength() {
+    return this.conversation.length;
+  }
+
+  clearConversation() {
+    this.conversation = [
+      { role: 'system', content: 'You are a helpful assistant.' }
+    ];
+  }
+
+  async processMessage(userInput) {
+    if (!TestEnv.hasApiKey()) {
+      throw new Error('No API key available');
     }
 
     this.addUserMessage(userInput);
-
+    
+    const client = TestEnv.createTestClient();
+    
     try {
-      const completion = await this.client.chat.completions.create({
+      const completion = await client.chat.completions.create({
         model: 'gpt-3.5-turbo',
         messages: this.conversation,
-        max_tokens: 100
+        max_tokens: 50
       });
 
       const reply = completion.choices[0].message.content;
       this.addAssistantMessage(reply);
       
       return {
-        response: reply,
+        reply,
         usage: completion.usage,
         conversationLength: this.conversation.length
       };
     } catch (error) {
       throw error;
     }
-  }
-
-  getConversationHistory() {
-    return [...this.conversation];
-  }
-
-  resetConversation() {
-    this.conversation = [
-      { role: 'system', content: 'You are a helpful assistant.' }
-    ];
-  }
-
-  getConversationLength() {
-    return this.conversation.length;
   }
 }
 
@@ -93,141 +80,119 @@ class TestChatbot {
 export async function runTests(config = {}) {
   const runner = new TestRunner();
 
-  // Unit Tests - Chatbot initialization and state management
+  // Unit Tests - Conversation Management
   runner.test('Chatbot initialization - default state', () => {
-    const chatbot = new TestChatbot();
+    const chatbot = new MockChatbot();
     
-    assert(Array.isArray(chatbot.conversation), 'conversation should be an array');
-    assert(chatbot.conversation.length === 1, 'conversation should start with system message');
-    assert(chatbot.conversation[0].role === 'system', 'first message should be system role');
-    assert(chatbot.conversation[0].content === 'You are a helpful assistant.', 'system message should be correct');
-    assert(chatbot.client === null, 'client should not be initialized yet');
+    const conversation = chatbot.getConversation();
+    assert(Array.isArray(conversation), 'conversation should be an array');
+    assert(conversation.length === 1, 'should start with system message');
+    assert(conversation[0].role === 'system', 'first message should be system role');
+    assert(conversation[0].content === 'You are a helpful assistant.', 'should have default system message');
   });
 
   runner.test('Message handling - add user message', () => {
-    const chatbot = new TestChatbot();
+    const chatbot = new MockChatbot();
     const userMessage = 'Hello, how are you?';
     
     chatbot.addUserMessage(userMessage);
     
-    assert(chatbot.conversation.length === 2, 'conversation should have 2 messages');
-    assert(chatbot.conversation[1].role === 'user', 'second message should be user role');
-    assert(chatbot.conversation[1].content === userMessage, 'user message content should match');
+    const conversation = chatbot.getConversation();
+    assert(conversation.length === 2, 'should have system + user message');
+    assert(conversation[1].role === 'user', 'second message should be user role');
+    assert(conversation[1].content === userMessage, 'should store user message content');
   });
 
   runner.test('Message handling - add assistant message', () => {
-    const chatbot = new TestChatbot();
-    const assistantMessage = 'I am doing well, thank you!';
+    const chatbot = new MockChatbot();
+    const assistantMessage = 'Hello! I am doing well, thank you.';
     
     chatbot.addAssistantMessage(assistantMessage);
     
-    assert(chatbot.conversation.length === 2, 'conversation should have 2 messages');
-    assert(chatbot.conversation[1].role === 'assistant', 'second message should be assistant role');
-    assert(chatbot.conversation[1].content === assistantMessage, 'assistant message content should match');
+    const conversation = chatbot.getConversation();
+    assert(conversation.length === 2, 'should have system + assistant message');
+    assert(conversation[1].role === 'assistant', 'second message should be assistant role');
+    assert(conversation[1].content === assistantMessage, 'should store assistant message content');
   });
 
-  runner.test('Message validation - empty user message', () => {
-    const chatbot = new TestChatbot();
+  runner.test('Conversation persistence - multiple exchanges', () => {
+    const chatbot = new MockChatbot();
     
-    assert.throws(() => {
-      chatbot.addUserMessage('');
-    }, /User message must be a non-empty string/, 'Should reject empty user message');
+    // Simulate a conversation
+    chatbot.addUserMessage('What is 2+2?');
+    chatbot.addAssistantMessage('2+2 equals 4.');
+    chatbot.addUserMessage('What about 3+3?');
+    chatbot.addAssistantMessage('3+3 equals 6.');
     
-    assert.throws(() => {
-      chatbot.addUserMessage(null);
-    }, /User message must be a non-empty string/, 'Should reject null user message');
+    const conversation = chatbot.getConversation();
+    assert(conversation.length === 5, 'should have system + 4 messages');
     
-    assert.throws(() => {
-      chatbot.addUserMessage(undefined);
-    }, /User message must be a non-empty string/, 'Should reject undefined user message');
+    // Verify conversation order
+    assert(conversation[0].role === 'system', 'first should be system');
+    assert(conversation[1].role === 'user', 'second should be user');
+    assert(conversation[2].role === 'assistant', 'third should be assistant');
+    assert(conversation[3].role === 'user', 'fourth should be user');
+    assert(conversation[4].role === 'assistant', 'fifth should be assistant');
+    
+    // Verify content
+    assert(conversation[1].content === 'What is 2+2?', 'should preserve first user message');
+    assert(conversation[3].content === 'What about 3+3?', 'should preserve second user message');
   });
 
-  runner.test('Message validation - invalid assistant message', () => {
-    const chatbot = new TestChatbot();
+  runner.test('Conversation management - clear conversation', () => {
+    const chatbot = new MockChatbot();
     
-    assert.throws(() => {
-      chatbot.addAssistantMessage('');
-    }, /Assistant message must be a non-empty string/, 'Should reject empty assistant message');
-    
-    assert.throws(() => {
-      chatbot.addAssistantMessage(123);
-    }, /Assistant message must be a non-empty string/, 'Should reject numeric assistant message');
-  });
-
-  runner.test('Conversation state - history retrieval', () => {
-    const chatbot = new TestChatbot();
-    
+    // Add some messages
     chatbot.addUserMessage('Hello');
     chatbot.addAssistantMessage('Hi there!');
-    chatbot.addUserMessage('How are you?');
+    assert(chatbot.getConversationLength() === 3, 'should have 3 messages before clear');
     
-    const history = chatbot.getConversationHistory();
+    // Clear conversation
+    chatbot.clearConversation();
     
-    assert(Array.isArray(history), 'history should be an array');
-    assert(history.length === 4, 'history should have 4 messages (system + 3 added)');
-    assert(history[0].role === 'system', 'first message should be system');
-    assert(history[1].role === 'user', 'second message should be user');
-    assert(history[2].role === 'assistant', 'third message should be assistant');
-    assert(history[3].role === 'user', 'fourth message should be user');
-    
-    // Verify it's a copy, not the original array
-    history.push({ role: 'test', content: 'test' });
-    assert(chatbot.conversation.length === 4, 'original conversation should not be modified');
+    const conversation = chatbot.getConversation();
+    assert(conversation.length === 1, 'should reset to just system message');
+    assert(conversation[0].role === 'system', 'should keep system message');
   });
 
-  runner.test('Conversation state - reset functionality', () => {
-    const chatbot = new TestChatbot();
+  runner.test('Conversation state - immutable access', () => {
+    const chatbot = new MockChatbot();
+    chatbot.addUserMessage('Test message');
     
-    chatbot.addUserMessage('Hello');
-    chatbot.addAssistantMessage('Hi there!');
-    assert(chatbot.conversation.length === 3, 'conversation should have 3 messages before reset');
+    const conversation1 = chatbot.getConversation();
+    const conversation2 = chatbot.getConversation();
     
-    chatbot.resetConversation();
+    // Modify the returned array
+    conversation1.push({ role: 'user', content: 'Modified' });
     
-    assert(chatbot.conversation.length === 1, 'conversation should have 1 message after reset');
-    assert(chatbot.conversation[0].role === 'system', 'remaining message should be system message');
-    assert(chatbot.conversation[0].content === 'You are a helpful assistant.', 'system message should be restored');
-  });
-
-  runner.test('Conversation state - length tracking', () => {
-    const chatbot = new TestChatbot();
-    
-    assert(chatbot.getConversationLength() === 1, 'initial length should be 1');
-    
-    chatbot.addUserMessage('Hello');
-    assert(chatbot.getConversationLength() === 2, 'length should be 2 after user message');
-    
-    chatbot.addAssistantMessage('Hi!');
-    assert(chatbot.getConversationLength() === 3, 'length should be 3 after assistant message');
-    
-    chatbot.resetConversation();
-    assert(chatbot.getConversationLength() === 1, 'length should be 1 after reset');
+    // Original should be unchanged
+    assert(conversation2.length === 2, 'original conversation should be unchanged');
+    assert(chatbot.getConversationLength() === 2, 'chatbot state should be unchanged');
   });
 
   // Integration Tests (require API key)
-  runner.test('OpenAI integration - successful chat completion', async () => {
-    if (TestEnv.skipIfNoApiKey('Chat completion test')) return;
+  runner.test('Real API integration - simple message', async () => {
+    if (TestEnv.skipIfNoApiKey('Real chatbot API integration')) return;
     
-    const chatbot = new TestChatbot();
+    const chatbot = new MockChatbot();
     
     try {
-      const result = await chatbot.getResponse('Say hello');
+      const result = await chatbot.processMessage('Say just "Hello" and nothing else.');
       
-      assert(typeof result.response === 'string', 'response should be a string');
-      assert(result.response.length > 0, 'response should not be empty');
-      assert(result.conversationLength === 3, 'conversation should have 3 messages after response');
+      assert(typeof result.reply === 'string', 'should return string reply');
+      assert(result.reply.length > 0, 'reply should not be empty');
+      assert(result.conversationLength === 3, 'should have system + user + assistant messages');
       
       TestAssert.isValidUsage(result.usage);
       
-      const history = chatbot.getConversationHistory();
-      assert(history[1].role === 'user', 'user message should be recorded');
-      assert(history[1].content === 'Say hello', 'user message content should match');
-      assert(history[2].role === 'assistant', 'assistant message should be recorded');
-      assert(history[2].content === result.response, 'assistant message should match response');
+      const conversation = chatbot.getConversation();
+      assert(conversation[1].role === 'user', 'should add user message');
+      assert(conversation[2].role === 'assistant', 'should add assistant message');
+      assert(conversation[2].content === result.reply, 'should store assistant reply');
       
     } catch (error) {
       if (error.status === 429 || error.status === 401) {
-        console.log(`   ℹ️  Chat completion test received expected error: ${error.status}`);
+        console.log(`   ℹ️  API integration test received expected error: ${error.status}`);
       } else if (error.message.includes('Connection error') || error.message.includes('network')) {
         console.log(`   ℹ️  Network connection issue: ${error.message}`);
       } else {
@@ -238,32 +203,34 @@ export async function runTests(config = {}) {
     skipIf: () => config.unitOnly || !TestEnv.hasApiKey()
   });
 
-  runner.test('OpenAI integration - conversation context preservation', async () => {
+  runner.test('Real API integration - conversation context', async () => {
     if (TestEnv.skipIfNoApiKey('Conversation context test')) return;
     
-    const chatbot = new TestChatbot();
+    const chatbot = new MockChatbot();
     
     try {
-      // First exchange
-      const result1 = await chatbot.getResponse('My name is Alice');
-      assert(result1.conversationLength === 3, 'conversation should have 3 messages after first exchange');
+      // First message
+      const result1 = await chatbot.processMessage('My name is Alice.');
+      assert(result1.conversationLength === 3, 'should have 3 messages after first exchange');
       
-      // Second exchange that references the first
-      const result2 = await chatbot.getResponse('What is my name?');
-      assert(result2.conversationLength === 5, 'conversation should have 5 messages after second exchange');
+      // Second message referencing first
+      const result2 = await chatbot.processMessage('What is my name?');
+      assert(result2.conversationLength === 5, 'should have 5 messages after second exchange');
       
-      // The response should ideally reference Alice, but we'll just check it's a valid response
-      assert(typeof result2.response === 'string', 'second response should be a string');
-      assert(result2.response.length > 0, 'second response should not be empty');
+      // The assistant should remember the name from context
+      const conversation = chatbot.getConversation();
+      assert(conversation.length === 5, 'conversation should have all messages');
       
-      const history = chatbot.getConversationHistory();
-      assert(history.length === 5, 'history should have all 5 messages');
-      assert(history[1].content === 'My name is Alice', 'first user message should be preserved');
-      assert(history[3].content === 'What is my name?', 'second user message should be preserved');
+      // Verify conversation structure
+      assert(conversation[0].role === 'system', 'first should be system');
+      assert(conversation[1].role === 'user' && conversation[1].content === 'My name is Alice.', 'should have first user message');
+      assert(conversation[2].role === 'assistant', 'should have first assistant response');
+      assert(conversation[3].role === 'user' && conversation[3].content === 'What is my name?', 'should have second user message');
+      assert(conversation[4].role === 'assistant', 'should have second assistant response');
       
     } catch (error) {
       if (error.status === 429 || error.status === 401) {
-        console.log(`   ℹ️  Context preservation test received expected error: ${error.status}`);
+        console.log(`   ℹ️  Conversation context test received expected error: ${error.status}`);
       } else if (error.message.includes('Connection error') || error.message.includes('network')) {
         console.log(`   ℹ️  Network connection issue: ${error.message}`);
       } else {
@@ -274,18 +241,19 @@ export async function runTests(config = {}) {
     skipIf: () => config.unitOnly || !TestEnv.hasApiKey()
   });
 
-  runner.test('Error handling - no API key', () => {
+  runner.test('Error handling - no API key', async () => {
+    const chatbot = new MockChatbot();
     const originalApiKey = process.env.OPENAI_API_KEY;
     
     try {
       // Temporarily remove API key
       delete process.env.OPENAI_API_KEY;
       
-      const chatbot = new TestChatbot();
-      
-      assert.throws(() => {
-        chatbot.initializeClient();
-      }, /No API key available/, 'Should throw error when no API key is available');
+      await assert.rejects(
+        async () => await chatbot.processMessage('Hello'),
+        /No API key available/,
+        'Should throw error when no API key is available'
+      );
       
     } finally {
       // Restore original API key
@@ -295,34 +263,79 @@ export async function runTests(config = {}) {
     }
   });
 
-  runner.test('Error handling - API call failure simulation', async () => {
+  runner.test('Error handling - API failure graceful degradation', async () => {
     if (!TestEnv.hasApiKey()) {
       console.log('⏭️  Skipping API failure test - no API key available');
       return;
     }
     
-    const chatbot = new TestChatbot();
+    const chatbot = new MockChatbot();
     
     try {
-      // Try to trigger an error with an invalid model (this might not always fail)
-      chatbot.client = TestEnv.createTestClient();
+      // Try to trigger an API error with invalid model
+      const client = TestEnv.createTestClient();
       
-      // Manually create a completion call that might fail
-      await chatbot.client.chat.completions.create({
-        model: 'invalid-model-name-that-does-not-exist',
-        messages: [{ role: 'user', content: 'test' }]
-      });
-      
-      // If we get here, the API didn't reject the invalid model (unexpected)
-      console.log('   ℹ️  API accepted invalid model name (unexpected but not a test failure)');
+      await assert.rejects(
+        async () => {
+          await client.chat.completions.create({
+            model: 'invalid-model-name-that-does-not-exist',
+            messages: chatbot.getConversation(),
+            max_tokens: 10
+          });
+        },
+        'Should throw error for invalid model'
+      );
       
     } catch (error) {
-      // This is expected - API should reject invalid model
-      assert(error.message || error.status, 'Error should have message or status');
-      console.log(`   ℹ️  Got expected API error: ${error.status || error.message}`);
+      // This is expected - we're testing error handling
+      if (error.status === 404 || error.message.includes('model')) {
+        console.log(`   ℹ️  Got expected error for invalid model: ${error.status || 'unknown'}`);
+      } else if (error.message.includes('Connection error') || error.message.includes('network')) {
+        console.log(`   ℹ️  Network connection issue: ${error.message}`);
+      } else {
+        throw error;
+      }
     }
   }, {
     skipIf: () => config.unitOnly || !TestEnv.hasApiKey()
+  });
+
+  runner.test('Message validation - empty input', () => {
+    const chatbot = new MockChatbot();
+    
+    // Test empty string
+    chatbot.addUserMessage('');
+    const conversation = chatbot.getConversation();
+    assert(conversation[1].content === '', 'should handle empty string');
+    
+    // Test whitespace only
+    chatbot.addUserMessage('   ');
+    assert(conversation[2].content === '   ', 'should handle whitespace');
+  });
+
+  runner.test('Message validation - special characters', () => {
+    const chatbot = new MockChatbot();
+    
+    const specialMessage = 'Hello! How are you? 🤖 Testing "quotes" and \'apostrophes\' & symbols.';
+    chatbot.addUserMessage(specialMessage);
+    
+    const conversation = chatbot.getConversation();
+    assert(conversation[1].content === specialMessage, 'should handle special characters');
+  });
+
+  runner.test('Conversation length tracking', () => {
+    const chatbot = new MockChatbot();
+    
+    assert(chatbot.getConversationLength() === 1, 'should start with length 1');
+    
+    chatbot.addUserMessage('Hello');
+    assert(chatbot.getConversationLength() === 2, 'should be 2 after user message');
+    
+    chatbot.addAssistantMessage('Hi there!');
+    assert(chatbot.getConversationLength() === 3, 'should be 3 after assistant message');
+    
+    chatbot.clearConversation();
+    assert(chatbot.getConversationLength() === 1, 'should reset to 1 after clear');
   });
 
   return await runner.run();

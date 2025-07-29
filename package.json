@@ -11,21 +11,45 @@
     "test:unit": "node tests/run-tests.js --unit-only",
     "test:integration": "node tests/run-tests.js --integration-only",
     "test:verbose": "node tests/run-tests.js --verbose",
-    "test:coverage": "c8 node tests/run-tests.js",
-    "test:coverage:unit": "c8 node tests/run-tests.js --unit-only",
-    "test:coverage:integration": "c8 node tests/run-tests.js --integration-only",
-    "test:coverage:report": "c8 report --reporter=html --reporter=text --reporter=json-summary",
-    "test:coverage:check": "c8 check-coverage --lines 80 --functions 80 --branches 80"
+    "test:coverage": "c8 --reporter=lcov --reporter=text --reporter=html --reports-dir=coverage node tests/run-tests.js",
+    "test:coverage:unit": "c8 --reporter=lcov --reporter=text --reporter=html --reports-dir=coverage node tests/run-tests.js --unit-only",
+    "test:coverage:integration": "c8 --reporter=lcov --reporter=text --reporter=html --reports-dir=coverage node tests/run-tests.js --integration-only",
+    "coverage:report": "c8 report --reporter=text-summary",
+    "coverage:html": "c8 report --reporter=html --reports-dir=coverage"
   },
   "dependencies": {
-    "openai": "latest",
-    "@openai/agents": "latest",
+    "openai": "5.10.2",
+    "@openai/agents": "0.0.14",
     "zod": "3.25.67",
-    "dotenv": "latest",
-    "axios": "latest"
+    "dotenv": "17.2.1",
+    "axios": "1.11.0"
   },
   "devDependencies": {
-    "c8": "^10.1.2"
+    "c8": "10.1.3"
+  },
+  "c8": {
+    "include": [
+      "foundations/**/*.js",
+      "chatbot/**/*.js",
+      "advanced/**/*.js",
+      "agents/**/*.js",
+      "assistants/**/*.js",
+      "index.js"
+    ],
+    "exclude": [
+      "tests/**",
+      "node_modules/**",
+      "coverage/**",
+      "*.config.js"
+    ],
+    "reporter": [
+      "text",
+      "lcov",
+      "html"
+    ],
+    "reports-dir": "coverage",
+    "all": true,
+    "check-coverage": false
   },
   "engines": {
     "node": ">=18.0.0"

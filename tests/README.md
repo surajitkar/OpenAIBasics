@@ -8,7 +8,8 @@ This directory contains comprehensive tests for the OpenAI Basics project founda
 tests/
 ├── foundations/
 │   ├── openai-setup.test.js      # Tests for foundations/openai-setup.js
-│   └── token-cost-demo.test.js   # Tests for foundations/token-cost-demo.js
+│   ├── token-cost-demo.test.js   # Tests for foundations/token-cost-demo.js
+│   └── coverage-demo.test.js     # Coverage demonstration tests
 ├── utils/
 │   └── test-helpers.js           # Shared testing utilities
 └── run-tests.js                  # Main test runner
@@ -35,6 +36,45 @@ npm run test:integration
 ```bash
 npm run test:verbose
 ```
+
+## Test Coverage
+
+### Running Tests with Coverage
+```bash
+# Run all tests with coverage
+npm run test:coverage
+
+# Run unit tests with coverage
+npm run test:coverage:unit
+
+# Run integration tests with coverage
+npm run test:coverage:integration
+
+# Generate HTML coverage reports
+npm run test:coverage:report
+
+# Check coverage thresholds (80% minimum)
+npm run test:coverage:check
+```
+
+### Coverage Reports
+- **HTML Reports**: Available in `coverage/` directory after running coverage
+- **JSON Summary**: `coverage/coverage-summary.json` for CI/CD integration
+- **LCOV Format**: `coverage/lcov.info` for external tools
+- **Text Output**: Console output during test runs
+
+### Coverage Thresholds
+- **Lines**: 80% minimum
+- **Functions**: 80% minimum  
+- **Branches**: 80% minimum
+- **Statements**: 80% minimum
+
+### GitHub Actions Integration
+Coverage reports are automatically:
+- Generated during CI/CD runs
+- Uploaded as artifacts using `actions/upload-artifact@v4`
+- Displayed in GitHub step summaries
+- Available for download from Actions tab
 
 ## Test Types
 
@@ -67,6 +107,13 @@ npm run test:verbose
 - Statistics aggregation
 - CSV export functionality
 - Edge cases and error handling
+
+### Coverage Demo Tests (`coverage-demo.test.js`)
+- Basic arithmetic operations and error handling
+- Array processing with filtering and transformation
+- Edge case handling for invalid inputs
+- Function existence and callable validation
+- Demonstrates coverage collection functionality
 
 ## Environment Setup
 

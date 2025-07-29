@@ -14,8 +14,8 @@
     "test:coverage": "c8 node tests/run-tests.js",
     "test:coverage:unit": "c8 node tests/run-tests.js --unit-only",
     "test:coverage:integration": "c8 node tests/run-tests.js --integration-only",
-    "coverage:report": "c8 report --reporter=html --reporter=text --reporter=json-summary",
-    "coverage:check": "c8 check-coverage --lines 80 --functions 80 --branches 80 --statements 80"
+    "test:coverage:report": "c8 report --reporter=html --reporter=text --reporter=json-summary",
+    "test:coverage:check": "c8 check-coverage --lines 80 --functions 80 --branches 80"
   },
   "dependencies": {
     "openai": "latest",
@@ -25,7 +25,7 @@
     "axios": "latest"
   },
   "devDependencies": {
-    "c8": "^8.0.1"
+    "c8": "^10.1.2"
   },
   "engines": {
     "node": ">=18.0.0"

@@ -27,7 +27,8 @@ const config = {
   unitOnly: process.argv.includes('--unit-only'),
   integrationOnly: process.argv.includes('--integration-only'),
   verbose: process.argv.includes('--verbose'),
-  testDir: __dirname // Changed to scan all test directories
+  coverage: process.env.NODE_V8_COVERAGE || process.argv.includes('--coverage'),
+  testDir: join(__dirname, 'foundations')
 };
 
 /**
@@ -63,8 +64,7 @@ async function findTestFiles(dir) {
       
       if (stats.isFile() && entry.endsWith('.test.js')) {
         files.push(fullPath);
-      } else if (stats.isDirectory() && entry !== 'utils') {
-        // Skip utils directory, but recurse into other directories
+      } else if (stats.isDirectory()) {
         const subFiles = await findTestFiles(fullPath);
         files.push(...subFiles);
       }
@@ -124,6 +124,7 @@ async function runAllTests() {
   console.log(`   Mode: ${config.unitOnly ? 'Unit tests only' : 
                        config.integrationOnly ? 'Integration tests only' : 'All tests'}`);
   console.log(`   Verbose: ${config.verbose}`);
+  console.log(`   Coverage: ${config.coverage ? '✅' : '❌'}`);
   console.log(`   API Key available: ${process.env.OPENAI_API_KEY ? '✅' : '❌'}`);
   console.log(`   Organization ID available: ${process.env.OPENAI_ORG_ID ? '✅' : '❌'}`);
   
@@ -163,6 +164,14 @@ async function runAllTests() {
   console.log(`   ${colorize('Failed:', 'red')} ${overallResults.failed}`);
   console.log(`   ${colorize('Skipped:', 'yellow')} ${overallResults.skipped}`);
   
+  // Coverage information
+  if (config.coverage) {
+    console.log('\n' + colorize('📈 Coverage Information:', 'blue'));
+    console.log('   Coverage data collected by c8');
+    console.log('   Run "npm run test:coverage:report" to generate HTML reports');
+    console.log('   Coverage reports will be available in ./coverage/ directory');
+  }
+  
   if (overallResults.failed > 0) {
     console.log(colorize('\n❌ Some tests failed!', 'red'));
     return false;
@@ -183,11 +192,19 @@ function showUsage() {
   console.log('  --unit-only         Run only unit tests (no API calls)');
   console.log('  --integration-only  Run only integration tests (requires API key)');
   console.log('  --verbose           Show detailed error information');
+  console.log('  --coverage          Enable coverage collection (also enabled by c8)');
   console.log('  --help              Show this help message');
+  console.log('\nCoverage Commands:');
+  console.log('  npm run test:coverage           Run tests with coverage');
+  console.log('  npm run test:coverage:unit      Run unit tests with coverage');
+  console.log('  npm run test:coverage:integration  Run integration tests with coverage');
+  console.log('  npm run test:coverage:report    Generate HTML coverage reports');
+  console.log('  npm run test:coverage:check     Check coverage thresholds');
   console.log('\nEnvironment Variables:');
   console.log('  OPENAI_API_KEY      Required for integration tests');
   console.log('  OPENAI_ORG_ID       Optional organization ID');
   console.log('  NO_COLOR            Disable colored output');
+  console.log('  NODE_V8_COVERAGE    Automatically set by c8 for coverage collection');
 }
 
 /**

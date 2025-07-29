@@ -1,16 +1,20 @@
 {
   "all": true,
-  "include": [
-    "**/*.js"
+  "src": [
+    "foundations",
+    "chatbot",
+    "advanced",
+    "agents",
+    "assistants",
+    "index.js",
+    "demo-all.js"
   ],
   "exclude": [
     "tests/**",
     "node_modules/**",
     "coverage/**",
     "*.config.js",
-    "*.test.js",
-    "**/*.test.js",
-    "demo-all.js"
+    "*.config.mjs"
   ],
   "reporter": [
     "text",
@@ -21,11 +25,11 @@
   "reports-dir": "coverage",
   "temp-directory": ".nyc_output",
   "check-coverage": true,
-  "lines": 75,
-  "functions": 75,
-  "branches": 70,
-  "statements": 75,
+  "lines": 80,
+  "functions": 80,
+  "branches": 80,
+  "statements": 80,
   "per-file": true,
-  "skip-full": false,
-  "clean": true
+  "clean": true,
+  "skip-full": false
 }

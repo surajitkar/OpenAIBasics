@@ -176,62 +176,6 @@ node assistants/file-analysis-demo.js
 - Document analysis and data processing
 - Applications requiring built-in tools
 
-## 🧪 Testing & Coverage
-
-This project includes comprehensive testing with code coverage analysis:
-
-### Running Tests
-
-```bash
-# Run all tests
-npm test
-
-# Run only unit tests (no API calls)
-npm run test:unit
-
-# Run only integration tests (requires API key)
-npm run test:integration
-
-# Run tests with verbose output
-npm run test:verbose
-```
-
-### Code Coverage
-
-```bash
-# Run tests with coverage analysis
-npm run test:coverage
-
-# Run unit tests with coverage
-npm run test:coverage:unit
-
-# Run integration tests with coverage
-npm run test:coverage:integration
-
-# Generate coverage reports
-npm run coverage:report
-
-# Check coverage thresholds
-npm run coverage:check
-```
-
-### Coverage Reports
-
-After running coverage tests, view the interactive HTML report:
-```bash
-open coverage/index.html  # macOS
-start coverage/index.html # Windows
-xdg-open coverage/index.html # Linux
-```
-
-**Coverage Targets:**
-- Lines: 75% minimum
-- Functions: 75% minimum
-- Branches: 70% minimum
-- Statements: 75% minimum
-
-For detailed coverage information, see [COVERAGE.md](./COVERAGE.md).
-
 ## 🛠️ Dependencies
 
 - **@openai/agents**: OpenAI Agents SDK for advanced agent workflows
@@ -239,7 +183,6 @@ For detailed coverage information, see [COVERAGE.md](./COVERAGE.md).
 - **zod**: Schema validation (required for Agents SDK)
 - **axios**: HTTP client for external API calls
 - **dotenv**: Environment variable management
-- **c8**: Code coverage analysis tool (dev dependency)
 
 ## 🌡️ Weather API Setup (Optional)
 
@@ -253,6 +196,50 @@ For enhanced weather functionality, get a free API key from [WeatherAPI.com](htt
    ```
 
 Without this key, the weather demos will use mock data.
+
+## 🧪 Testing & Coverage
+
+### Running Tests
+```bash
+# Run all tests
+npm test
+
+# Run only unit tests (no API key required)
+npm run test:unit
+
+# Run only integration tests (requires API key)
+npm run test:integration
+
+# Run tests with verbose output
+npm run test:verbose
+```
+
+### Test Coverage
+```bash
+# Run tests with coverage collection
+npm run test:coverage
+
+# Generate HTML coverage reports
+npm run test:coverage:report
+
+# Check coverage thresholds (80% minimum)
+npm run test:coverage:check
+```
+
+### Coverage Features
+- **Comprehensive Coverage**: Lines, functions, branches, and statements
+- **HTML Reports**: Visual coverage reports in `coverage/` directory
+- **CI/CD Integration**: Automatic coverage reporting in GitHub Actions
+- **Artifact Upload**: Coverage reports uploaded as GitHub Actions artifacts
+- **Threshold Enforcement**: 80% minimum coverage for all metrics
+
+### Test Structure
+- **Unit Tests**: Fast, offline tests for core logic
+- **Integration Tests**: Real API calls with graceful error handling
+- **Coverage Demo**: Example tests demonstrating coverage collection
+- **GitHub Actions**: Automated testing across Node.js 18.x, 20.x, 22.x
+
+For detailed testing information, see [tests/README.md](./tests/README.md).
 
 ## 🔧 Configuration
 

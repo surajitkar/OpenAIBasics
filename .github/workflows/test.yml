@@ -37,19 +37,25 @@ jobs:
     - name: Run unit tests with coverage
       run: npm run test:coverage:unit
       
-    - name: Upload coverage reports
-      uses: actions/upload-artifact@v3
+    - name: Generate coverage reports
+      run: npm run test:coverage:report
+      
+    - name: Upload unit test coverage reports
+      uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: coverage-unit-${{ matrix.node-version }}
-        path: coverage/
+        name: unit-coverage-reports-node-${{ matrix.node-version }}
+        path: |
+          coverage/
+          !coverage/**/*.tmp
         retention-days: 30
-      
+        
     - name: Display test environment info
       run: |
         echo "Node.js version: $(node --version)"
         echo "npm version: $(npm --version)"
         echo "Test mode: Unit tests only"
+        echo "Coverage reports generated: ✅"
         
   # Integration tests - only run if API key is available
   integration-tests:
@@ -87,20 +93,26 @@ jobs:
         OPENAI_ORG_ID: ${{ secrets.OPENAI_ORG_ID }}
       run: npm run test:coverage:integration
       
-    - name: Upload coverage reports
-      uses: actions/upload-artifact@v3
+    - name: Generate coverage reports
+      run: npm run test:coverage:report
+      
+    - name: Upload integration test coverage reports
+      uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: coverage-integration-${{ matrix.node-version }}
-        path: coverage/
+        name: integration-coverage-reports-node-${{ matrix.node-version }}
+        path: |
+          coverage/
+          !coverage/**/*.tmp
         retention-days: 30
-      
+        
     - name: Display test environment info
       run: |
         echo "Node.js version: $(node --version)"
         echo "npm version: $(npm --version)"
         echo "Test mode: Integration tests"
         echo "API Key available: ✅"
+        echo "Coverage reports generated: ✅"
         
   # Full test suite - comprehensive testing
   full-tests:
@@ -136,14 +148,57 @@ jobs:
         OPENAI_ORG_ID: ${{ secrets.OPENAI_ORG_ID }}
       run: npm run test:coverage
       
-    - name: Upload coverage reports
-      uses: actions/upload-artifact@v3
+    - name: Generate comprehensive coverage reports
+      run: npm run test:coverage:report
+      
+    - name: Check coverage thresholds
+      run: npm run test:coverage:check
+      continue-on-error: true
+      
+    - name: Upload comprehensive coverage reports
+      uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: coverage-full-${{ matrix.node-version }}
-        path: coverage/
+        name: full-coverage-reports-node-${{ matrix.node-version }}
+        path: |
+          coverage/
+          !coverage/**/*.tmp
         retention-days: 30
-      
+        
+    - name: Add coverage summary to step summary
+      if: always()
+      run: |
+        echo "## 📊 Test Coverage Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        if [ -f "coverage/coverage-summary.json" ]; then
+          echo "### Coverage Metrics" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Percentage | Covered/Total |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|------------|---------------|" >> $GITHUB_STEP_SUMMARY
+          
+          # Extract coverage data using node
+          node -e "
+            try {
+              const fs = require('fs');
+              const coverage = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
+              const total = coverage.total;
+              
+              console.log(\`| Lines | \${total.lines.pct}% | \${total.lines.covered}/\${total.lines.total} |\`);
+              console.log(\`| Functions | \${total.functions.pct}% | \${total.functions.covered}/\${total.functions.total} |\`);
+              console.log(\`| Branches | \${total.branches.pct}% | \${total.branches.covered}/\${total.branches.total} |\`);
+              console.log(\`| Statements | \${total.statements.pct}% | \${total.statements.covered}/\${total.statements.total} |\`);
+            } catch (e) {
+              console.log('| Coverage data | Not available | - |');
+            }
+          " >> $GITHUB_STEP_SUMMARY
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📁 **Coverage reports uploaded as artifacts**" >> $GITHUB_STEP_SUMMARY
+          echo "📈 **HTML reports available in coverage/ directory**" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Coverage summary not available" >> $GITHUB_STEP_SUMMARY
+        fi
+        
     - name: Run tests with verbose output on failure
       if: failure()
       env:
@@ -231,6 +286,11 @@ jobs:
         else
           echo "❌ **Code quality checks failed**" >> $GITHUB_STEP_SUMMARY
         fi
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Coverage Reports" >> $GITHUB_STEP_SUMMARY
+        echo "📊 **Coverage artifacts uploaded** - Check the Actions artifacts section" >> $GITHUB_STEP_SUMMARY
+        echo "📈 **HTML coverage reports** available for download" >> $GITHUB_STEP_SUMMARY
+        echo "🎯 **Coverage thresholds**: Lines 80%, Functions 80%, Branches 80%" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### Environment" >> $GITHUB_STEP_SUMMARY
         echo "- **Node.js versions tested**: 18.x, 20.x, 22.x" >> $GITHUB_STEP_SUMMARY

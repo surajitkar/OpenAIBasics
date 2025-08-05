@@ -17,7 +17,8 @@ jobs:
             cat README.md
 
         - name: Generate ASCII Artwork
-          run: cowsay -f dragon "Hello, World! This is my first GitHub Actions workflow."
+          run: cowsay -f dragon "Hello, World! This is my first GitHub Actions workflow." >> dragon.txt
+        
         
 
         # - name: List files

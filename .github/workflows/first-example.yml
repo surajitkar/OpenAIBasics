@@ -9,12 +9,19 @@ jobs:
         steps:
         - name: Checkout code
           uses: actions/checkout@v4
-          
-        - name: Welcome message
-          run: echo "Hello, World! This is my first GitHub Actions workflow."
 
-        - name: List files
-          run: ls -la
+        - name: List and read files
+          run: |
+            echo "Hello, World! This is my first GitHub Actions workflow."
+            ls -ltra
+            cat README.md
 
-        - name: Read file
-          run: cat README.md
+        - name: Generate ASCII Artwork
+          run: cowsay -f dragon "Hello, World! This is my first GitHub Actions workflow."
+        
+
+        # - name: List files
+        #   run: ls -la
+
+        # - name: Read file
+        #   run: cat README.md

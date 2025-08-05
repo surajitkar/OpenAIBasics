@@ -10,26 +10,30 @@ jobs:
         - name: Checkout code
           uses: actions/checkout@v4
 
-        - name: Install Cowsay
-          run: sudo apt-get install cowsay -y
+        ### Without Shell Script
+        # - name: Install Cowsay
+        #   run: sudo apt-get install cowsay -y
 
-        - name: Execute Cowsay CMD
-          run: cowsay -f dragon "Run for cover, I am a DRAGON..... RAWR." >> dragon.txt
+        # - name: Execute Cowsay CMD
+        #   run: cowsay -f dragon "Run for cover, I am a DRAGON..... RAWR." >> dragon.txt
         
-        - name: Test File Existence
-          run: |
-            if [ -f dragon.txt ]; then
-              echo "File dragon.txt exists."
-            else
-              echo "File dragon.txt does not exist."
-              exit 1
-            fi
+        # - name: Test File Existence
+        #   run: |
+        #     if [ -f dragon.txt ]; then
+        #       echo "File dragon.txt exists."
+        #     else
+        #       echo "File dragon.txt does not exist."
+        #       exit 1
+        #     fi
 
-        - name: Test File Existence using Grep
-          run: grep -i "dragon" dragon.txt
+        # - name: Test File Existence using Grep
+        #   run: grep -i "dragon" dragon.txt
 
-        - name: Display File Content
-          run: cat dragon.txt
+        # - name: Display File Content
+        #   run: cat dragon.txt
         
-        - name: List files
-          run: ls -la
+        # - name: List files
+        #   run: ls -la
+
+        - name: Execute Shell Script
+          run: ./ascii.script.sh

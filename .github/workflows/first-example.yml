@@ -16,11 +16,6 @@ jobs:
             ls -ltra
             cat README.md
 
-        - name: Generate ASCII Artwork
-          run: cowsay -f dragon "Hello, World! This is my first GitHub Actions workflow." >> dragon.txt
-        
-        
-
         # - name: List files
         #   run: ls -la
 

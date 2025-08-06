@@ -14,15 +14,26 @@ jobs:
         - name: Install Cowsay
           run: sudo apt-get install cowsay -y
 
+        - name: Sleep for 30 sec
+          run: sleep 30   
+
     Build_job:
+        needs: Setup_Checkout_job
         runs-on: ubuntu-latest
         steps:
+        - name: Sleep for 10 sec
+          run: sleep 10   
+
         - name: Execute Cowsay CMD
           run: cowsay -f dragon "Run for cover, I am a DRAGON..... RAWR." >> dragon.txt
     
     Test_job:
+        needs: Build_job
         runs-on: ubuntu-latest
         steps:
+        - name: Sleep for 30 sec
+          run: sleep 10    
+
         - name: Test File Existence
           run: |
             if [ -f dragon.txt ]; then
@@ -36,8 +47,12 @@ jobs:
           run: grep -i "dragon" dragon.txt
 
     Deploy_job:
+        needs: Test_job
         runs-on: ubuntu-latest
         steps:
+        - name: Sleep for 30 sec
+          run: sleep 10   
+
         - name: Display File Content
           run: cat dragon.txt
 

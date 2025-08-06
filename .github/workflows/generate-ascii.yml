@@ -4,7 +4,7 @@ on: [push]
 
 
 jobs:
-    Setup_Checkout_job:
+    Build_job:
         runs-on: ubuntu-latest
         steps:
         - name: Checkout code
@@ -16,13 +16,6 @@ jobs:
 
         - name: Sleep for 30 sec
           run: sleep 30   
-
-    Build_job:
-        needs: Setup_Checkout_job
-        runs-on: ubuntu-latest
-        steps:
-        - name: Sleep for 10 sec
-          run: sleep 10   
 
         - name: Execute Cowsay CMD
           run: cowsay -f dragon "Run for cover, I am a DRAGON..... RAWR." >> dragon.txt

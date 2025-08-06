@@ -4,38 +4,47 @@ on: [push]
 
 
 jobs:
-    first_job:
+    Setup_Checkout_job:
         runs-on: ubuntu-latest
         steps:
         - name: Checkout code
           uses: actions/checkout@v4
 
-        ### Without Shell Script
-        # - name: Install Cowsay
-        #   run: sudo apt-get install cowsay -y
+        ## Without Shell Script
+        - name: Install Cowsay
+          run: sudo apt-get install cowsay -y
 
-        # - name: Execute Cowsay CMD
-        #   run: cowsay -f dragon "Run for cover, I am a DRAGON..... RAWR." >> dragon.txt
-        
-        # - name: Test File Existence
-        #   run: |
-        #     if [ -f dragon.txt ]; then
-        #       echo "File dragon.txt exists."
-        #     else
-        #       echo "File dragon.txt does not exist."
-        #       exit 1
-        #     fi
-
-        # - name: Test File Existence using Grep
-        #   run: grep -i "dragon" dragon.txt
-
-        # - name: Display File Content
-        #   run: cat dragon.txt
-        
-        # - name: List files
-        #   run: ls -la
-
-        - name: Execute Shell Script
+    Build_job:
+        runs-on: ubuntu-latest
+        steps:
+        - name: Execute Cowsay CMD
+          run: cowsay -f dragon "Run for cover, I am a DRAGON..... RAWR." >> dragon.txt
+    
+    Test_job:
+        runs-on: ubuntu-latest
+        steps:
+        - name: Test File Existence
           run: |
-            chmod +x ./ascii.script.sh
-            ./ascii.script.sh
+            if [ -f dragon.txt ]; then
+              echo "File dragon.txt exists."
+            else
+              echo "File dragon.txt does not exist."
+              exit 1
+            fi
+
+        - name: Test File Existence using Grep
+          run: grep -i "dragon" dragon.txt
+
+    Deploy_job:
+        runs-on: ubuntu-latest
+        steps:
+        - name: Display File Content
+          run: cat dragon.txt
+
+        - name: List files
+          run: ls -la
+
+        # - name: Execute Shell Script
+        #   run: |
+        #     chmod +x ./ascii.script.sh
+        #     ./ascii.script.sh
